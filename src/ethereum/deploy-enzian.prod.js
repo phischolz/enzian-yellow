@@ -7,30 +7,20 @@ const basicEnzianCompiled = require('./build/BasicEnzian.json');
  */
 const deployContractAndLibrary = async(web3Wrapper, compiled, privateKey) => {
 
-  let basicEnzian_deployed;
-  if(privateKey) {
-    if(compiled) {
-      basicEnzian_deployed = await web3Wrapper.deployContractByAbiAndBytecode(compiled.abi, compiled.evm.bytecode.object, {   }, privateKey);
-    } else {
-      basicEnzian_deployed = await web3Wrapper.deployContractByAbiAndBytecode(basicEnzianCompiled.abi, basicEnzianCompiled.evm.bytecode.object, {   }, privateKey);
-    }
+  let opts = { };
+  if(!privateKey){
+    opts = { from: web3Wrapper.accounts[0]  }
   }
-  else {
-    if(compiled) {
-      basicEnzian_deployed = await web3Wrapper.deployContractByAbiAndBytecode(compiled.abi, compiled.evm.bytecode.object, { from: web3Wrapper.accounts[0]  }, privateKey);
-    } else {
-      basicEnzian_deployed = await web3Wrapper.deployContractByAbiAndBytecode(basicEnzianCompiled.abi, basicEnzianCompiled.evm.bytecode.object, { from: web3Wrapper.accounts[0]  }, privateKey);
-    }
+  let tempCompiled = compiled;
+  if(!tempCompiled){
+    tempCompiled = basicEnzianCompiled;
   }
-  
 
+  let basicEnzian_deployed = await web3Wrapper.deployContractByAbiAndBytecode(tempCompiled.abi, tempCompiled.evm.bytecode.object, opts, privateKey);
 
-
-
-
-    return {
-      basicEnzian: basicEnzian_deployed
-    };
+   return {
+     basicEnzian: basicEnzian_deployed
+   };
 }
 
 module.exports = deployContractAndLibrary;
