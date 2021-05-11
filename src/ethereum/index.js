@@ -68,7 +68,7 @@ class BasicEnzianYellow {
            }
         }
 
-        return deployedContract.basicEnzian;
+        return deployedContract.basicEnzian.contractAddress;
     }
 
     /**
@@ -193,16 +193,15 @@ class BasicEnzianYellow {
 
     async executeTaskByAddress(contractAddress, task, privateKey) {
 
-        var localContractInstance = new this.web3Wrapper.web3.eth.Contract( basicEnzianCompiled.abi, contractAddress);
+        let localContractInstance = new this.web3Wrapper.web3.eth.Contract( basicEnzianCompiled.abi, contractAddress);
+        let receipt;
+
         if (privateKey){
             const fromAddress = this.web3Wrapper.web3.eth.accounts.privateKeyToAccount(privateKey).address;
 
-
-
-
             let txString = localContractInstance.methods.completing(task);
 
-            var tx = {
+            let tx = {
                 gas: this.web3Wrapper.web3.utils.toHex('5000000'),
                 data: txString
             };
@@ -219,17 +218,26 @@ class BasicEnzianYellow {
             }, privateKey)
             console.log('signed', signed)
 
-
-            let returnTx = await this.web3Wrapper.web3.eth.sendSignedTransaction(signed.rawTransaction)
-            console.log('rtx', returnTx)
-
-            return returnTx.events.TaskCompleted.returnValues.success;
-        } else {
-            let receipt = await localContractInstance.methods.completing(task)
-                .send({ from: this.web3Wrapper.accounts[0], gas: 1000000 })
-            return receipt.events.TaskCompleted.returnValues.success;
+            try{
+                receipt = await this.web3Wrapper.web3.eth.sendSignedTransaction(signed.rawTransaction);
+            } catch (e){
+                console.log("ERROR IN ethereum/index.js, executeTaskByAddress->sendSignedTA, with pk given:", e.stack);
+                return false;
+            }
+            console.log('rtx', receipt);
         }
-
+        else {
+            try{
+                receipt = await localContractInstance.methods.completing(task)
+                    .send({ from: this.web3Wrapper.accounts[0], gas: 1000000 })
+            } catch (e) {
+                console.log("ERROR IN ethereum/index.js, executeTaskByAddress->sendSignedTA, with NO pk given:",
+                    e.stack);
+                return false;
+            }
+        }
+        //return receipt.events.TaskCompleted.returnValues.success;
+        return receipt.status;  //sufficient: status should be true here, otherwise error caught above!
     }
 
     async updateProcessVariable(contractInstance, variableName, newValue, account) {

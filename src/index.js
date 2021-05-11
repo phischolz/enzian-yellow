@@ -16,7 +16,7 @@ class EnzianYellow {
     }
 
     /**
-     *
+     * returns contract address.
      * @param enzianModel
      * @param compiled OPTIONAL
      * @param privateKey OPTIONAL
@@ -26,11 +26,11 @@ class EnzianYellow {
         let deployedModel;
 
         if(privateKey){
+            console.log("EnzianYellow: Deploy Contract with pk ", privateKey);
             deployedModel = await this.basicEnzianYellow.deployEnzianProcessSelfSigned(enzianModel, privateKey, compiled);
         } else {
+            console.log("EnzianYellow: Deploy Contract with account ", this.web3Wrapper.accounts[0]);
             if(!this.web3Wrapper.initialized) await this.web3Wrapper.init();
-
-            console.log("Deploy Contract with account ", this.web3Wrapper.accounts[0]);
             deployedModel = await this.basicEnzianYellow.deployEnzianProcess(enzianModel, this.web3Wrapper.accounts[0], compiled);
         }
 
