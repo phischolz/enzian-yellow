@@ -30,7 +30,7 @@ class EthereumEnzianYellow {
      */
     async deployEnzianProcess(parsedBPMN){
 
-        let deployedContractAddr = await this.accessor.deployContract(this.compiled.abi, this.compiled.evm.bytecode);
+        let deployedContractAddr = await this.accessor.deployContract(this.compiled.abi, this.compiled.evm.bytecode.object);
 
         for(let count = 0; count < parsedBPMN.obj.length; count++) {
             let elem = parsedBPMN.obj[count];

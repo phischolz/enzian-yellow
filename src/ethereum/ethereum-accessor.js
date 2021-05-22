@@ -23,6 +23,7 @@ class ethereumAccessor{
         }
         if(!initialized && privateKey){
             this.account = this.web3.eth.accounts.privateKeyToAccount(privateKey);
+            this.web3.eth.accounts.wallet.add(this.account);
             initialized = true;
         }
         if(!initialized) {
@@ -55,20 +56,20 @@ class ethereumAccessor{
         let returnContract;
         await transactionObject
             .send({
-                from: this.account,
+                from: this.account.address,
                 gas: estimatedGas,
                 gasPrice: '1'
             }, function(error, transactionHash){  })
             .on('error', function(error){
-                console.err("No error should occur.");
-            })
+                console.error('[ethereumAccessor.deployContract] this shouldn`t happen', error);})
             .then((newContractInstance) => {
                 returnContract = newContractInstance;
             });
 
+        console.log('[ethereumAccessor.deployContract] returnContract', returnContract);
         this.contract = returnContract;
-        this.contractAddress = returnContract.basicEnzian.contractAddress;
-        return returnContract.basicEnzian.contractAddress;
+        this.contractAddress = returnContract.options.address;
+        return this.contractAddress;
     }
 
     /**
@@ -80,14 +81,14 @@ class ethereumAccessor{
      */
     async registerTask(contractAddress, data, abi){
         await this.setCurrentContract(abi, contractAddress);
-        await this.contract.basicEnzian.methods.createTask(
+        await this.contract.methods.createTask(
             data.id,
             data.name,
             data.resource,
             data.proceedMergingGateway,
             data.req,
             data.fin
-        ).send({from: this.account, gas: 1000000});
+        ).send({from: this.account.address, gas: 1000000});
     }
 
     /**
@@ -99,7 +100,7 @@ class ethereumAccessor{
      */
     async registerDecisionTask(contractAddress, data, abi) {
         await this.setCurrentContract(abi, contractAddress);
-        await this.contract.basicEnzian.methods.createTaskWithDecision(
+        await this.contract.methods.createTaskWithDecision(
             data.id,
             data.name,
             data.res,
@@ -107,7 +108,7 @@ class ethereumAccessor{
             data.req,
             data.com,
             data.fin
-        ).send({from: this.account, gas: 1000000});
+        ).send({from: this.account.address, gas: 1000000});
     }
 
     /**
@@ -122,7 +123,7 @@ class ethereumAccessor{
         let receipt;
         try{
             receipt = await this.contract.methods.completing(taskID)
-                .send({ from: this.account, gas: 1000000 })
+                .send({ from: this.account.address, gas: 1000000 })
         } catch (e) {
             console.log("[ethereum-accessor.executeTask] ERROR:",
                 e.stack);
@@ -140,7 +141,7 @@ class ethereumAccessor{
      */
     async getEventLog(abi, contractAddress){
         await this.setCurrentContract(abi, contractAddress);
-        return await this.contract.methods.getDebugStringeventLog().call({from: this.account});
+        return await this.contract.methods.getDebugStringeventLog().call({from: this.account.address});
 
     }
 
@@ -155,7 +156,7 @@ class ethereumAccessor{
     async updateProcessVariable(abi, contractAddress, variableName, newValue) {
         await this.setCurrentContract(abi, contractAddress);
         this.contract.methods.updateIntProcessVariable(variableName, newValue)
-            .send({ from: this.account, gas: 1000000 });
+            .send({ from: this.account.address, gas: 1000000 });
     }
 
     /**
