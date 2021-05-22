@@ -5,6 +5,7 @@
         "node_http_url": "http://127.0.0.1",
         "node_account_password": "root",
         "node_account_address": "0xd544990c04e9d84a21acd228d16bc9a76de6d186",
+        "node_account_pk": "ee373fb8f1d33db972c1c01043f042e6f5bc73ec8daeda3357c7b5a56e307028",
         "chain_type": "ethereum"
     }
 

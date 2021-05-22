@@ -5,18 +5,13 @@ const basicEnzianCompiled = require('./build/BasicEnzian.json');
  * Compiles, deploys and also links the two required Contracts:
  * The DecisionLibrary and the BasicEnzian.
  */
-const deployContractAndLibrary = async(web3Wrapper, compiled, privateKey) => {
+const deployContractAndLibrary = async(web3Wrapper, compiled, account) => {
 
-  let opts = { };
-  if(!privateKey){
-    opts = { from: web3Wrapper.accounts[0]  }
-  }
-  let tempCompiled = compiled;
-  if(!tempCompiled){
-    tempCompiled = basicEnzianCompiled;
+  if(!compiled){
+    compiled = basicEnzianCompiled;
   }
 
-  let basicEnzian_deployed = await web3Wrapper.deployContractByAbiAndBytecode(tempCompiled.abi, tempCompiled.evm.bytecode.object, opts, privateKey);
+  let basicEnzian_deployed = await web3Wrapper.deployContractByAbiAndBytecode(compiled.abi, compiled.evm.bytecode.object, account);
 
    return {
      basicEnzian: basicEnzian_deployed

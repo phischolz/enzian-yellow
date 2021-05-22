@@ -1,16 +1,24 @@
 const parseBPMN = require('./bpmn/parseBPMN');
-const Web3Wrapper = require('./ethereum/web3-wrapper');
-const BasicEnzianYellow = require('./ethereum');
+const EthereumEnzianYellow = require('./ethereum/index');
 
 class EnzianYellow {
 
-    constructor(provider) {
+    constructor(provider, privateKey, type) {
         console.log("Enzian-Dev!");
-        this.web3Wrapper = new Web3Wrapper(provider);
-        this.basicEnzianYellow = new BasicEnzianYellow(this.web3Wrapper);
+        switch(type){
+            case 'ethereum':
+                this.basicEnzianYellow = new EthereumEnzianYellow(provider, privateKey, type);
+                break;
+            default:
+                type = 'ethereum';
+        }
     }
 
-
+    /**
+     *
+     * @param bpmnModel
+     * @returns {Promise<Requirements>} enzianModel for deployment.
+     */
     async parseBpmnModel(bpmnModel) {
         return await parseBPMN(bpmnModel);
     }
@@ -18,71 +26,45 @@ class EnzianYellow {
     /**
      * returns contract address.
      * @param enzianModel
-     * @param compiled OPTIONAL
-     * @param privateKey OPTIONAL
-     * @returns {Promise<*|*|*>}
+     * @returns {Promise<string>}
      */
-    async deployEnzianModel(enzianModel, compiled = undefined, privateKey = undefined) {
-        let deployedModel;
-
-        if(privateKey){
-            console.log("EnzianYellow: Deploy Contract with pk ", privateKey);
-            deployedModel = await this.basicEnzianYellow.deployEnzianProcessSelfSigned(enzianModel, privateKey, compiled);
-        } else {
-            console.log("EnzianYellow: Deploy Contract with account ", this.web3Wrapper.accounts[0]);
-            if(!this.web3Wrapper.initialized) await this.web3Wrapper.init();
-            deployedModel = await this.basicEnzianYellow.deployEnzianProcess(enzianModel, this.web3Wrapper.accounts[0], compiled);
-        }
-
-        return deployedModel;
-    }
-
-    async deployBPMNProcess(bpmnModel) {
-    
-        if(!this.web3Wrapper.initialized) {
-            await this.web3Wrapper.init();
-        }
-
-        let parsedBPMN = await this.parseBpmnModel(bpmnModel);
-        let deployedModel = await this.basicEnzianYellow.deployEnzianProcess(parsedBPMN, this.web3Wrapper.accounts[0]);
-
-        return { parsedBPMN, deployedModel };
-    }
-
-    async executeTask(instance, task, account) {
-
-        return this.basicEnzianYellow.executeTask(instance, task, account);
+    async deployEnzianModel(enzianModel) {
+        return await this.basicEnzianYellow.deployEnzianProcess(enzianModel);
     }
 
     /**
-     * Executes Task by Contract Address and Task ID.
-     * @param contractAddress
-     * @param task ID
-     * @param privateKey OPTIONAL
-     * @returns {Promise<Event>}
+     *
+     * @param bpmnModel
+     * @returns {Promise<{deployedModelAddr: string, parsedBPMN: Requirements}>}
      */
-    async executeTaskByAddress(contractAddress, task, privateKey) {
-        if(!this.web3Wrapper.initialized) {
-            await this.web3Wrapper.init();
-        }
-        return this.basicEnzianYellow.executeTaskByAddress(contractAddress, task, privateKey);
+    async deployBPMNProcess(bpmnModel) {
+        let parsedBPMN = await this.parseBpmnModel(bpmnModel);
+        let deployedModelAddr = await this.basicEnzianYellow.deployEnzianProcess(parsedBPMN);
+        return { parsedBPMN, deployedModelAddr };
     }
 
-    async updateProcessVariable(instance, variableName, newValue, account) {
-        return this.basicEnzianYellow.updateProcessVariable(instance, variableName, newValue, account);
+    /**
+     *
+     * @param contractAddress
+     * @param task
+     * @returns {Promise<number|boolean|string|"rejected"|"fulfilled">}
+     */
+    async executeTask(contractAddress, task) {
+        return await this.basicEnzianYellow.executeTask(contractAddress, task);
     }
 
-    async eventlog(instance) {
-        return this.basicEnzianYellow.eventlog(instance);
+    async updateProcessVariable(contractAddress, variableName, newValue) {
+        return await this.basicEnzianYellow.updateProcessVariable(contractAddress, variableName, newValue);
     }
 
-    async eventlogByAddress(address) {
-        if(!this.web3Wrapper.initialized) {
-            await this.web3Wrapper.init();
-        }
-        return this.basicEnzianYellow.eventlogByAddress(address);
+    /**
+     *
+     * @param contractAddress
+     * @returns {Promise<*>}
+     */
+    async eventLog(contractAddress) {
+        return this.basicEnzianYellow.eventLog(contractAddress);
     }
-
 }
 
 module.exports = EnzianYellow;

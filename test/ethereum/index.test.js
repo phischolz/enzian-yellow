@@ -3,7 +3,7 @@ const ganache = require('ganache-cli');
 
 const path = require('path');
 const fs = require('fs-extra');
-const BasicEnzianYellow = require('../../src/ethereum');
+const BasicEnzianYellow = require('../../src/ethereum/index');
 const Web3Wrapper = require('../../src/ethereum/web3-wrapper');
 const parseBPMN = require('../../src/bpmn/parseBPMN');
 

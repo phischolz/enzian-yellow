@@ -2,6 +2,7 @@ const { create } = require('lodash');
 const Web3 = require('web3');
 const util = require('util');
 const path = require('path');
+const config = require('../../config/config')
 
 
 /**
@@ -18,10 +19,16 @@ class Web3Wrapper {
         this.initialized = false;
     }
 
-    async init() {
-        this.accounts = await this.web3.eth.getAccounts();
+    async init(pk) {
+        if(pk){
+            this.accounts = await this.web3.eth.accounts.privateKeyToAccount(pk);
+        } else {
+            this.accounts = await this.web3.eth.getAccounts();
+        }
         this.initialized = true;
     }
+
+
 
     async deployContract(compiled, opts) {
     
@@ -51,97 +58,30 @@ class Web3Wrapper {
         return returnContract;
     }
 
-    async deployContractSelfSigned(compiled, opts) {
-    
-        var tx = {
-             gas: this.web3.utils.toHex('5000000'),
-             gasPrice :this.web3.utils.toHex("0"),
-             data: compiled.evm.bytecode.object
+    async deployContractSelfSigned(compiled, account) {
+        console.log("[web3Wrapper.deployContractSelfSigned] called");
+        console.log("[web3Wrapper.deployContractSelfSigned] bytecode: ", compiled.evm.bytecode.object)
 
-            };
 
-        console.log('tx', tx)
 
-        let signed = await this.web3.eth.accounts.signTransaction(tx, '62188f47cefd16322ab69190a12d9c1fb9f41303bf48abfcd56491bf5594be12')
-        console.log('signed', signed)
+        if(!account) account = await this.web3.eth.accounts.privateKeyToAccount(
+            global.gConfig.node_account_pk);
+        let signed = await account.signTransaction({
+            gas: this.web3.utils.toHex('5000000'),
+            gasPrice :this.web3.utils.toHex("0"),
+            data: compiled.evm.bytecode.object
+        })
+        console.log('[web3Wrapper.deployContractSelfSigned] signed', signed)
             
         let returnContract = await this.web3.eth.sendSignedTransaction(signed.rawTransaction)
-        console.log('rc', returnContract)
+        console.log('[web3Wrapper.deployContractSelfSigned] returnContract:', returnContract)
 
         return returnContract;
     }
 
+    async deployContractByAbiAndBytecode(abi, bytecode, account) {
 
-    
-    async deployContractByAbiAndBytecode(abi, bytecode, opts, privateKey) {
-        console.log('deploycontracbyabiandbytecode')
-        console.log('abi', abi)
-        console.log('bc', bytecode)
-        console.log('opts', opts)
-        console.log('pk', privateKey)
-    
-        let returnContract;
-
-        let thecontract = new this.web3.eth.Contract(abi);
-        let deploy_opt = {
-            data: bytecode,
-            arguments: opts.arguments
-        };
-        let transactionObject = await thecontract.deploy(deploy_opt)
-      
-        console.log('to', transactionObject)
-
-        if(privateKey) {
-    
-            var tx = {
-                gas: this.web3.utils.toHex('5000000'),
-                data: bytecode
-               };
-   
-
-               console.log('tx', tx)
-   
-           let signed = await this.web3.eth.accounts.signTransaction(tx, privateKey)
-           console.log('signed', signed)
-               
-           let returnTx = await this.web3.eth.sendSignedTransaction(signed.rawTransaction)
-           console.log('rtx', returnTx)
-          
-           return returnTx;
-
-
-        }
-        else {
-            console.log('no private key found, using meta mask (opts from)')
-
-            const estimatedGas = await transactionObject.estimateGas({gas: 5000000}, function(error, gasAmount){
-                if(gasAmount == 5000000)
-                    console.log('Method ran out of gas');
-    
-                if(error) {
-                    console.log('ERROR', error);
-                }
-            });
-
-            await transactionObject
-            .send({
-                from: opts.from,
-                gas: estimatedGas,
-                gasPrice: '1'
-            }, function(error, transactionHash){  })
-            .on('error', function(error){
-                console.err("No error should occur.");
-            })
-            .then((newContractInstance) => {
-                returnContract = newContractInstance;
-            });
-    
-            return returnContract;
-        }
-      
     }
-
-    
 }
 
 
