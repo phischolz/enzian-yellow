@@ -83,7 +83,7 @@ library TaskLibrary {
                 // tasks following an split gateway must store the end boss and set the required flag to true;
                 // NO! better: gateway (give it not--> ) decision stores end boss   
                 if (_state.enabled[requiredTasksIds[i]]) {
-                    success = _state.tasks[requiredTasksIds[0]].completed;
+                    success = _state.tasks[requiredTasksIds[i]].completed;
                 }
             }
         }
