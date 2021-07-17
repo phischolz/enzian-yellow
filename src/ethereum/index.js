@@ -112,6 +112,15 @@ class EthereumEnzianYellow {
     async updateProcessVariable(contractAddress, variableName, newValue) {
         await this.accessor.updateProcessVariable(this.compiled.abi, contractAddress, variableName, newValue);
     }
+
+    /**
+     * Get a list of tasks associated with a given address
+     * @param contractAddress
+     * @returns {Promise<*>}
+     */
+    async tasksForAddress(contractAddress) {
+        return await this.accessor.getTasksForAddress(this.compiled.abi, contractAddress);
+    }
 }
 
 module.exports = EthereumEnzianYellow;

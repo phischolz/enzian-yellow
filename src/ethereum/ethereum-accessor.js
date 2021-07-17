@@ -142,7 +142,6 @@ class ethereumAccessor{
     async getEventLog(abi, contractAddress){
         await this.setCurrentContract(abi, contractAddress);
         return await this.contract.methods.getDebugStringeventLog().call({from: this.account.address});
-
     }
 
     /**
@@ -170,6 +169,17 @@ class ethereumAccessor{
             this.contract = new this.web3.eth.Contract(abi, contractAddress);
             this.contractAddress = contractAddress;
         }
+    }
+
+    /**
+     * Call a method on the given contract returning the list of tasks associated with it
+     * @param abi
+     * @param contractAddress
+     * @returns {Promise<*>}
+     */
+    async getTasksForAddress(abi, contractAddress){
+        await this.setCurrentContract(abi, contractAddress);
+        return await this.contract.methods.getStoredTasks().call({from: this.account.address});
     }
 }
 module.exports = ethereumAccessor;

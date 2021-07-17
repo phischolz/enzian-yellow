@@ -1,6 +1,7 @@
 const path = require('path');
 const solc = require('solc');
 const fs = require('fs-extra');
+const linker = require("solc/linker");
 const { DECISION_LIBRARY_ROPSTEN } = require('../global');
 
 /**
@@ -58,4 +59,14 @@ function getLibrarySource(dependency) {
       };
 }
 
-module.exports = { compileOne }
+const linkLibrary = (contract, contractName, libraryAddress) => {
+    let hexAddress = libraryAddress.slice(2);
+    hexAddress = Array(40 - hexAddress.length + 1).join('0') + hexAddress;
+    const finalByteCode = contract.evm.bytecode.object.split('__' + Object.keys(linker.findLinkReferences(contract.evm.bytecode.object))[0] + '__').join(hexAddress);
+    contract.evm.bytecode.object = finalByteCode
+    contract.evm.deployedBytecode.object = finalByteCode
+    const buildPath = path.resolve(__dirname, 'build');
+    fs.outputJsonSync(path.resolve(buildPath,  contractName + '.json'), contract);
+}
+
+module.exports = { compileOne, linkLibrary }
