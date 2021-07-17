@@ -75,7 +75,7 @@ function getDecisions(incomingFlows) {
 
       while(flag) {
         if(startWithSequenceFlowWithDecision.$type === 'bpmn:SequenceFlow') {
-          if(startWithSequenceFlowWithDecision.targetRef.$type === 'bpmn:ExclusiveGateway') {// ASSUME: CORRESPONDING MERGING
+          if(startWithSequenceFlowWithDecision.targetRef.$type === 'bpmn:ExclusiveGateway' || startWithSequenceFlowWithDecision.targetRef.$type === 'bpmn:ParallelGateway') {// ASSUME: CORRESPONDING MERGING
             startWithSequenceFlowWithDecision = startWithSequenceFlowWithDecision.sourceRef
           flag = false;
 
