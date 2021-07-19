@@ -80,6 +80,15 @@ class EnzianYellow {
     async eventLog(contractAddress) {
         return this.basicEnzianYellow.eventLog(contractAddress);
     }
+
+    /**
+     * Get a list of tasks associated with a given address
+     * @param contractAddress
+     * @returns {Promise<*>}
+     */
+    async tasksForAddress(contractAddress) {
+        return this.basicEnzianYellow.tasksForAddress(contractAddress);
+    }
 }
 
 module.exports = EnzianYellow;
