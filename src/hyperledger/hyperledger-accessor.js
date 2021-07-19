@@ -7,17 +7,15 @@ const path = require('path');
 const { buildCAClient, registerAndEnrollUser, enrollAdmin } = require('./utils/CAUtil');
 const { buildCCPOrg1, buildWallet } = require('./utils/AppUtil.js');
 
+//TODO connection is hardcoded to local testnet!
 const channelName = 'mychannel';
 const chaincodeName = 'basic';
 const mspOrg1 = 'Org1MSP';
 const walletPath = path.join(__dirname, 'wallet');
 const org1UserId = 'appUser';
 
-function prettyJSONString(inputString) {
-    return JSON.stringify(JSON.parse(inputString), null, 2);
-}
-//TODO IMPL
-//TODO DOC
+
+
 
 const NONE = JSON.stringify('');
 const NONEARRAY = JSON.stringify([]);
@@ -38,6 +36,10 @@ class HyperledgerAccessor {
         console.groupEnd();
     }
 
+    /**
+     * initializes the hl-accessor.
+     * @returns {Promise<void>}
+     */
     async init(){
         // build an in memory object with the network configuration (also known as a connection profile)
         this.ccp = buildCCPOrg1();
@@ -66,6 +68,10 @@ class HyperledgerAccessor {
         this.initialized = true;
     }
 
+    /**
+     * connects gateway. used by init, mainly.
+     * @returns {Promise<void>}
+     */
     async connect(){
         await this.gateway.connect(this.ccp, {
             wallet: this.wallet,
@@ -74,6 +80,10 @@ class HyperledgerAccessor {
         });
     }
 
+    /**
+     * create a new, empty process instance.
+     * @returns {Promise<string>} key (== address) of the created process
+     */
     async deployProcess() {
         console.group(context, "deployProcess");
         this.printArgs(arguments);
@@ -86,6 +96,12 @@ class HyperledgerAccessor {
         return returnValue;
     }
 
+    /**
+     * register a task to a deployed/instantiated process
+     * @param processAddress parent process key
+     * @param data dict. See code for specification.
+     * @returns {Promise<boolean>} success flag
+     */
     async registerTask(processAddress, data){
         console.group(context, "registerTask");
         this.printArgs(arguments);
@@ -107,7 +123,8 @@ class HyperledgerAccessor {
         return (!ans);
     }
 
-    async registerDecisionTask(processAddress, taskID) {
+
+    async registerDecisionTask(processAddress, data, decision) {
         console.group(context, "registerDecisionTask");
         this.printArgs(arguments);
 
@@ -118,6 +135,13 @@ class HyperledgerAccessor {
         //TODO
     }
 
+    /**
+     * attempts to execute selected task. returns true, if successful,
+     * false otherwise (e.g., when requirements weren't met).
+     * @param processAddress
+     * @param taskID
+     * @returns {Promise<boolean>}
+     */
     async executeTask(processAddress, taskID){
         console.group(context, "executeTask");
         this.printArgs(arguments);
