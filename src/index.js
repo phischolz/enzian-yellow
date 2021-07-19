@@ -4,7 +4,7 @@ const EthereumEnzianYellow = require('./ethereum/index');
 class EnzianYellow {
 
     constructor(provider, privateKey, type) {
-        console.log("Enzian-Dev2!");
+        console.log("EnzianYellow instantiating");
         switch(type){
             case 'ethereum':
                 this.basicEnzianYellow = new EthereumEnzianYellow(provider, privateKey, type);
