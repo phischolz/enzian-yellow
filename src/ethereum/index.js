@@ -1,7 +1,7 @@
 const ethereumAccessor = require('./ethereum-accessor');
 const basicEnzianCompiled = require('./build/BasicEnzian.json');
 const{ GatewayType, DecisionType, operatorBySymbol } = require('../contract-consts');
-
+const context = "[EthereumEnzianYellow] "
 
 class EthereumEnzianYellow {
 
@@ -13,14 +13,14 @@ class EthereumEnzianYellow {
      *
      * @param [privateKey] if provider is not window.ethereum or doesn't provide accounts, this
      * private Key will be used to access the Chain and operate on it.
-     *
-     * @param [compiled]
      */
     constructor(provider, privateKey){
+        console.group(context, "construction");
+        this.printArgs(arguments);
         this.accessor = new ethereumAccessor(provider, privateKey);
         this.compiled = basicEnzianCompiled;
 
-
+        console.groupEnd();
     }
 
     /**
@@ -29,6 +29,8 @@ class EthereumEnzianYellow {
      * @returns {Promise<*>} Contract address of Process.
      */
     async deployEnzianProcess(parsedBPMN){
+        console.group(context, "deployEnzianProcess");
+        this.printArgs(arguments);
 
         let deployedContractAddr = await this.accessor.deployContract(this.compiled.abi, this.compiled.evm.bytecode.object);
 
@@ -75,12 +77,10 @@ class EthereumEnzianYellow {
                             }
                 }
                 await this.accessor.registerDecisionTask(deployedContractAddr, data, this.compiled.abi);
-                
-                    
             }
         }
+        console.groupEnd();
         return deployedContractAddr;
-
     }
 
     /**
@@ -90,7 +90,11 @@ class EthereumEnzianYellow {
      * @returns {Promise<number|boolean|string|"rejected"|"fulfilled">}
      */
     async executeTask(contractAddress, taskID){
-        return this.accessor.executeTask(this.compiled.abi, contractAddress, taskID);
+        console.group(context, "executeTask");
+        this.printArgs(arguments);
+        let res = this.accessor.executeTask(this.compiled.abi, contractAddress, taskID);
+        console.groupEnd();
+        return res;
     }
 
     /**
@@ -99,7 +103,11 @@ class EthereumEnzianYellow {
      * @returns {Promise<*>}
      */
     async eventLog(contractAddress){
-        return await this.accessor.getEventLog(this.compiled.abi, contractAddress);
+        console.group(context, "eventLog");
+        this.printArgs(arguments);
+        let res = await this.accessor.getEventLog(this.compiled.abi, contractAddress);
+        console.groupEnd();
+        return res;
     }
 
     /**
@@ -110,7 +118,10 @@ class EthereumEnzianYellow {
      * @returns {Promise<void>}
      */
     async updateProcessVariable(contractAddress, variableName, newValue) {
+        console.group(context, "updateProcessVariable");
+        this.printArgs(arguments);
         await this.accessor.updateProcessVariable(this.compiled.abi, contractAddress, variableName, newValue);
+        console.groupEnd();
     }
 
     /**
@@ -119,7 +130,17 @@ class EthereumEnzianYellow {
      * @returns {Promise<*>}
      */
     async tasksForAddress(contractAddress) {
-        return await this.accessor.getTasksForAddress(this.compiled.abi, contractAddress);
+        console.group(context, "tasksForAddress");
+        this.printArgs(arguments);
+        let res = await this.accessor.getTasksForAddress(this.compiled.abi, contractAddress);
+        console.groupEnd();
+        return res;
+    }
+
+    printArgs(args){
+        console.groupCollapsed("args:");
+        console.dir(args);
+        console.groupEnd();
     }
 }
 
