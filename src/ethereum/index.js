@@ -7,18 +7,27 @@ class EthereumEnzianYellow {
 
     /**
      *
-     *
      * @param provider either window.ethereum, or
      * an HTTP URL with port to access the Blockchain
      *
      * @param [privateKey] if provider is not window.ethereum or doesn't provide accounts, this
      * private Key will be used to access the Chain and operate on it.
+     *
+     * @param [opts] options-dict. expected to contain selected ABI under name abi. If not contained,
+     * a default will be used that probably doesn't work.
      */
-    constructor(provider, privateKey){
+    constructor(provider, privateKey, opts){
         console.group(context, "construction");
         this.printArgs(arguments);
+        if(opts.compiled){
+            console.log("selected the ABI given to constructor")
+            this.compiled = opts.compiled;
+        } else {
+            console.log("no ABI given, using default")
+            this.compiled = basicEnzianCompiled;
+        }
         this.accessor = new ethereumAccessor(provider, privateKey);
-        this.compiled = basicEnzianCompiled;
+
 
         console.groupEnd();
     }
