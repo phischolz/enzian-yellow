@@ -4,28 +4,17 @@ const HyperledgerEnzianYellow = require('./hyperledger/index')
 
 class EnzianYellow {
 
-    constructor(provider, privateKey, type) {
-        console.log('Enzian-yellow: passed type arg: ', type);
+    constructor(provider, privateKey, type, opts) {
+        console.log("EnzianYellow instantiating");
         switch(type){
             case 'ethereum':
-                console.log("constructing eth-enzian-dev:");
-                console.log("provider: " + provider)
-                console.log("private key: " + privateKey)
-                console.log("type: " + type);
-                this.basicEnzianYellow = new EthereumEnzianYellow(provider, privateKey);
+                this.basicEnzianYellow = new EthereumEnzianYellow(provider, privateKey, opts);
                 break;
-
             case 'hyperledger':
                 this.basicEnzianYellow = new HyperledgerEnzianYellow(provider, privateKey);
                 break;
             default:
-                console.log("DEFAULT-constructing eth-enzian-dev:");
-                console.log("provider: " + provider)
-                console.log("i provider metamask?: " + (provider === window.ethereum))
-                console.log("private key: " + privateKey)
-                console.log("type: " + "ethereum");
-                this.basicEnzianYellow = new EthereumEnzianYellow(provider, privateKey, "ethereum");
-                break;
+                type = 'ethereum';
         }
     }
 

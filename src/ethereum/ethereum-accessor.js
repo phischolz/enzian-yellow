@@ -1,5 +1,5 @@
-const config = require('../../config/config')
 const Web3 = require('web3')
+const context = "[EthereumAccessor] "
 
 /**
  * takes care of direct blockchain communication.
@@ -11,6 +11,9 @@ const Web3 = require('web3')
 class ethereumAccessor{
 
     constructor(provider, privateKey){
+        console.group(context, "constructor");
+        this.printArgs(arguments);
+
         this.contract = undefined;
         this.contractAddress = undefined;
         let initialized = false;
@@ -29,6 +32,7 @@ class ethereumAccessor{
         if(!initialized) {
             throw new Error('ETHEREUM-ACCESSOR: no viable account information given!')
         }
+        console.groupEnd();
     }
 
     /**
@@ -38,19 +42,18 @@ class ethereumAccessor{
      * @returns {Promise<*>}
      */
     async deployContract(abi, bytecode) {
-        console.log('[ethereumAccessor.deployContract] called');
-        console.log('[ethereumAccessor.deployContract] abi:', abi);
-        console.log('[ethereumAccessor.deployContract] bytecode', bytecode);
+        console.group(context, "deployContract");
+        this.printArgs(arguments);
 
         let contract = new this.web3.eth.Contract(abi);
         let transactionObject = await contract.deploy({data: bytecode});
-        console.log('[ethereumAccessor.deployContract] transactionObject', transactionObject)
+
 
         const estimatedGas = await transactionObject.estimateGas(
             {gas: 5000000},
             function(error, gasAmount){
-                if(gasAmount === 5000000) console.log('[ethereumAccessor.deployContract] Method ran out of gas');
-                if(error) console.log('[ethereumAccessor.deployContract] ERROR', error);
+                if(gasAmount === 5000000) console.log('Method ran out of gas');
+                if(error) console.log('ERROR: ', error);
             });
 
         let returnContract;
@@ -61,14 +64,15 @@ class ethereumAccessor{
                 gasPrice: '1'
             }, function(error, transactionHash){  })
             .on('error', function(error){
-                console.error('[ethereumAccessor.deployContract] this shouldn`t happen', error);})
+                console.error(context, 'this shouldn`t happen', error);})
             .then((newContractInstance) => {
                 returnContract = newContractInstance;
             });
 
-        console.log('[ethereumAccessor.deployContract] returnContract', returnContract);
+        console.log('returnContract', returnContract);
         this.contract = returnContract;
         this.contractAddress = returnContract.options.address;
+        console.groupEnd();
         return this.contractAddress;
     }
 
@@ -80,6 +84,8 @@ class ethereumAccessor{
      * @returns {Promise<void>}
      */
     async registerTask(contractAddress, data, abi){
+        console.group(context, "registerTask");
+        this.printArgs(arguments);
         await this.setCurrentContract(abi, contractAddress);
         await this.contract.methods.createTask(
             data.id,
@@ -89,6 +95,7 @@ class ethereumAccessor{
             data.req,
             data.fin
         ).send({from: this.account.address, gas: 1000000});
+        console.groupEnd();
     }
 
     /**
@@ -99,6 +106,8 @@ class ethereumAccessor{
      * @returns {Promise<void>}
      */
     async registerDecisionTask(contractAddress, data, abi) {
+        console.group(context, "registerDecisionTask");
+        this.printArgs(arguments);
         await this.setCurrentContract(abi, contractAddress);
         await this.contract.methods.createTaskWithDecision(
             data.id,
@@ -109,6 +118,7 @@ class ethereumAccessor{
             data.com,
             data.fin
         ).send({from: this.account.address, gas: 1000000});
+        console.groupEnd();
     }
 
     /**
@@ -119,6 +129,8 @@ class ethereumAccessor{
      * @returns {Promise<number|boolean|string|"rejected"|"fulfilled">}
      */
     async executeTask(abi, contractAddress, taskID){
+        console.group(context, "executeTask");
+        this.printArgs(arguments);
         await this.setCurrentContract(abi, contractAddress);
         let receipt;
         try{
@@ -130,6 +142,7 @@ class ethereumAccessor{
             return false;
         }
         //return receipt.events.TaskCompleted.returnValues.success;
+        console.groupEnd();
         return receipt.status; //this should NEVER be false!
     }
 
@@ -140,8 +153,12 @@ class ethereumAccessor{
      * @returns {Promise<*>}
      */
     async getEventLog(abi, contractAddress){
+        console.group(context, "getEventLog");
+        this.printArgs(arguments);
         await this.setCurrentContract(abi, contractAddress);
-        return await this.contract.methods.getDebugStringeventLog().call({from: this.account.address});
+        let res =  await this.contract.methods.getDebugStringeventLog().call({from: this.account.address});
+        console.groupEnd();
+        return res;
     }
 
     /**
@@ -153,9 +170,12 @@ class ethereumAccessor{
      * @returns {Promise<void>}
      */
     async updateProcessVariable(abi, contractAddress, variableName, newValue) {
+        console.group(context, "updateProcessVariable");
+        this.printArgs(arguments);
         await this.setCurrentContract(abi, contractAddress);
         this.contract.methods.updateIntProcessVariable(variableName, newValue)
             .send({ from: this.account.address, gas: 1000000 });
+        console.groupEnd();
     }
 
     /**
@@ -178,8 +198,18 @@ class ethereumAccessor{
      * @returns {Promise<*>}
      */
     async getTasksForAddress(abi, contractAddress){
+        console.group(context, "getTasksForAddress");
+        this.printArgs(arguments);
         await this.setCurrentContract(abi, contractAddress);
-        return await this.contract.methods.getStoredTasks().call({from: this.account.address});
+        let res = await this.contract.methods.getStoredTasks().call({from: this.account.address});
+        console.groupEnd();
+        return res;
+    }
+
+    printArgs(args){
+        console.groupCollapsed("args:");
+        console.dir(args);
+        console.groupEnd();
     }
 }
 module.exports = ethereumAccessor;
